@@ -49,7 +49,7 @@ class block_assign_get_feedback extends block_base
      */
     private function fullpageurl()
     {
-        if (isnull($this->page_url)) {
+        if (is_null($this->page_url)) {
             global $_SERVER;
             $pageURL = 'http';
             if ($_SERVER["HTTPS"] == "on") {
