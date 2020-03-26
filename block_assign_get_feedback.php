@@ -160,6 +160,8 @@ class block_assign_get_feedback extends block_base
         // if the contents are already set, just return them
         if ($this->content !== NULL) {
             return $this->content;
+        } else {
+            error_log('Content is not null :' . $this->content->text);
         }
 
         // this is only for logged in users
