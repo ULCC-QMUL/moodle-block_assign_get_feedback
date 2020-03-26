@@ -139,13 +139,16 @@ class block_assign_get_feedback extends block_base
      * @return              string, as HTML content for the block
      *
      */
-    public final function get_content(): stdClass
+    public final function get_content(): ?stdClass
     {
         // define usage of global variables
         global $PAGE, $COURSE;// , $DB , $CFG ; // $USER, $SITE , $OUTPUT, $THEME, $OUTPUT ;
 
         // Check if the page is referring to a glossary module view activity
         if ('mod-assign-view' !== $PAGE->pagetype) {
+            if (NULL === $this->content) {
+                $this->content = new stdClass();
+            }
             return $this->content;
         }
 
