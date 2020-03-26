@@ -52,7 +52,7 @@ class block_assign_get_feedback extends block_base
         if ($this->page_url === NULL) {
             global $_SERVER;
             $pageURL = 'http';
-            if ($_SERVER["HTTPS"] === "on") {
+            if (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] === "on") {
                 $pageURL .= "s";
             }
             $pageURL .= "://";
