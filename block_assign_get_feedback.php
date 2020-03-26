@@ -142,14 +142,10 @@ class block_assign_get_feedback extends block_base
     public final function get_content(): ?stdClass
     {
         // define usage of global variables
-        global $PAGE, $COURSE;// , $DB , $CFG ; // $USER, $SITE , $OUTPUT, $THEME, $OUTPUT ;
+        global $PAGE; //, $COURSE, $DB , $CFG ; // $USER, $SITE , $OUTPUT, $THEME, $OUTPUT ;
 
-        // Check if the page is referring to a glossary module view activity
+        // Check if the page is referring to an assign module grading page
         if ('mod-assign-grading' !== $PAGE->pagetype) {
-            if (NULL === $this->content) {
-                $this->content = new stdClass();
-                $this->content->text = $PAGE->pagetype;
-            }
             return $this->content;
         }
 
@@ -169,7 +165,7 @@ class block_assign_get_feedback extends block_base
         // this is only for logged in users
         try {
             if (!isloggedin() || isguestuser()) {
-                return '';
+                return NULL;
             }
         } catch (coding_exception $e) {
             error_log($e->getMessage());
@@ -189,13 +185,6 @@ class block_assign_get_feedback extends block_base
             error_log($e->getMessage());
         }
 
-        // get the module information
-        try {
-            $courseinfo = get_fast_modinfo($COURSE);
-        } catch (moodle_exception $e) {
-            error_log($e->getMessage());
-        }
-
         // prapare for contents
         $this->content = new stdClass;
         $this->content->text = '';
@@ -209,40 +198,49 @@ class block_assign_get_feedback extends block_base
         }
 
 
-        // get the id parameter if exists
+        // get the Course Module ID
         $cmid = $this->get_cmid();
+        error_log("The cmid is $cmid");
 
         // check if there is a valid glossary view page
         if ($cmid > 0) {
             // set page context
-            $PAGE->set_context(context_module::instance($cmid));
             try {
-                if (isset($courseinfo) && $courseinfo->get_cm($cmid)) {
-                    $cm = $courseinfo->get_cm($cmid);
-                } else {
-                    return $this->content;
-                }
+                $PAGE->set_context(context_module::instance($cmid));
             } catch (Throwable $e) {
                 error_log('ERROR: assign_get_feedback set_context ' . $e->getMessage());
                 return $this->content;
             }
 
             // Check if the course module is available and it is visible and it is visible to the user and it is an assign module
-            if (!(TRUE === $cm->available && '1' === $cm->visible && TRUE === $cm->uservisible && 'assign' === $cm->modname)) {
+            if (!(1 === $this->is_visible($cmid))) {
                 return $this->content;
             }
 
-            // get glossary ID
-            $cmid = (int)$cm->instance;
-
-            // show link to feedback messages
+            // get to feedback comments
             $links = $this->show_links($cmid);
 
-            // add the contents of the form to the block
+            // add the contents of the feedback comments to the block
             $this->content->text .= $links;
         }
         // Finish and return contents
         return $this->content;
+    }
+
+    /**
+     * @param int $cmid
+     * @return int
+     */
+    private final function is_visible(int $cmid): int
+    {
+        global $DB;
+        $visibility = 0;
+        try {
+            $visibility = (int)$DB->get_field('course_modules', $return = 'visible', ['id' => $cmid]);
+        } catch (Exception $exception) {
+            error_log($exception->getMessage());
+        }
+        return $visibility;
     }
 
     private function show_feedback_comments_link(int $cmid): string
