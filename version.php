@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 $plugin = (object)new stdClass();
-$plugin->version = 202003200;
+$plugin->version = 2020032600;
 $plugin->requires = 2017111302; // Moodle 3.4.2 is required.
 $plugin->component = 'block_assign_get_feedback'; // Full name of the plugin (used for diagnostics)
 $plugin->maturity = MATURITY_ALPHA;
