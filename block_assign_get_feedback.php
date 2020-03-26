@@ -148,6 +148,7 @@ class block_assign_get_feedback extends block_base
         if ('mod-assign-view' !== $PAGE->pagetype) {
             if (NULL === $this->content) {
                 $this->content = new stdClass();
+                $this->content->text = $PAGE->pagetype;
             }
             return $this->content;
         }
