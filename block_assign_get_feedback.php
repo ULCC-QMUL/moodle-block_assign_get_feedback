@@ -103,11 +103,10 @@ class block_assign_get_feedback extends block_base
         $cmid = 0;
         $params = [];
         $page_url = $this->fullpageurl();
-        $page_path = $this->mb_parse_url($page_url)[PHP_URL_PATH];
-        /** @noinspection PhpVoidFunctionResultUsedInspection */
-        error_log(var_dump($page_path, TRUE));
-        if (mb_strpos($page_path, '/mod/assign/view.php') !== FALSE) {
-            $url_query = $this->mb_parse_url($page_url)[PHP_URL_QUERY];
+        $page_path = parse_url($page_url)['path'];
+        if (strpos($page_path, '/mod/assign/view.php') !== FALSE) {
+            $url_query = parse_url($page_url)['query'];
+            # split URL query into parameters array
             parse_str($url_query, $params);
             if (isset($params['id']) && (int)$params['id'] > 0) {
                 $cmid = (int)$params['id'];
@@ -202,7 +201,7 @@ class block_assign_get_feedback extends block_base
 
         // get the Course Module ID
         $cmid = $this->get_cmid();
-        error_log("The cmid is $cmid");
+        #error_log("The cmid is $cmid");
 
         // check if there is a valid glossary view page
         if ($cmid > 0) {
@@ -215,7 +214,7 @@ class block_assign_get_feedback extends block_base
             }
 
             // Check if the course module is available and it is visible and it is visible to the user and it is an assign module
-            if (!(1 === $this->is_visible($cmid))) {
+            if (!(1 == $this->is_visible($cmid))) {
                 return $this->content;
             }
 
@@ -238,20 +237,21 @@ class block_assign_get_feedback extends block_base
         global $DB;
         $visibility = 0;
         try {
-            $visibility = (int)$DB->get_field('course_modules', $return = 'visible', ['id' => $cmid]);
+            $visibility = $DB->get_field('course_modules', 'visible', ['id' => $cmid ]);
+            # error_log('VISIBILITY_1_OK :'.print_r($visibility));
         } catch (Exception $exception) {
-            error_log($exception->getMessage());
+            error_log('VISIBILITY_1_ERR:'.print_r($exception, true)); #->getMessage());
         }
         return $visibility;
     }
 
     private function show_feedback_comments_link(int $cmid): string
     {
-        global $DB;
+        global $DB, $CFG;
         $html = '';
         if ($cmid > 0) {
-            $stu = $DB->sql_concat_join(' ', ['cm.course', 'co.shortname', 'cm.id', 'ma.name', 'ac.assignment']);
-            $tea = $DB->sql_concat_join(' ', ['tea.idnumber', 'tea.username', 'tea.firstname', 'tea.lastname']);
+            $stu = $DB->sql_concat_join("' '", ['cm.course', 'co.shortname', 'cm.id', 'ma.name', 'ac.assignment']);
+            $tea = $DB->sql_concat_join("' '", ['tea.idnumber', 'tea.username', 'tea.firstname', 'tea.lastname']);
             $sql = /** @lang TEXT */
                 "
 SELECT 
@@ -269,12 +269,14 @@ WHERE mo.name  = :module AND cm.id = :cmid ";
                 $records = $DB->get_records_sql($sql, ['module' => 'assign', 'cmid' => $cmid]);
                 if ($records) {
                     $action = new moodle_url('/blocks/assign_get_feedback/feedback_comments.php', ['id' => $cmid, 'sesskey' => sesskey()]);
-                    $html .= html_writer::link($action, get_string('feedback_comments', 'block_assign_get_feedback'));
+                    $html .= '<p>' . html_writer::link($action, get_string('feedback_comments', 'block_assign_get_feedback'),['target'=>'_blank']) . '</p>';
                 } else {
-                    $html .= get_string('no_feedback_comments', 'block_assign_get_feedback');
+                    $html .=  '<p>' . get_string('no_feedback_comments', 'block_assign_get_feedback') . '</p>';
                 }
             } catch (Exception $exception) {
-                error_log($exception->getMessage());
+                if($CFG->debug){
+                    error_log('COMMENTS_SQL_ERR '.print_r($exception,true));
+                }
             }
         }
         return $html;
