@@ -145,7 +145,7 @@ class block_assign_get_feedback extends block_base
         global $PAGE, $COURSE;// , $DB , $CFG ; // $USER, $SITE , $OUTPUT, $THEME, $OUTPUT ;
 
         // Check if the page is referring to a glossary module view activity
-        if ('mod-assign-view' !== $PAGE->pagetype) {
+        if ('mod-assign-grading' !== $PAGE->pagetype) {
             if (NULL === $this->content) {
                 $this->content = new stdClass();
                 $this->content->text = $PAGE->pagetype;
