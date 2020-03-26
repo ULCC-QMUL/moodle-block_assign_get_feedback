@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection GlobalVariableUsageInspection */
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -24,7 +24,7 @@ class block_assign_get_feedback extends block_base
     private $cm;
     private $course;
 
-    public function init()
+    public final function init(): void
     {
         // set the title of this plugin
         try {
@@ -39,7 +39,7 @@ class block_assign_get_feedback extends block_base
     /**
      * @return array
      */
-    public function applicable_formats()
+    public final function applicable_formats(): array
     {
         return array('all' => TRUE);
     }
@@ -47,12 +47,12 @@ class block_assign_get_feedback extends block_base
     /**
      * @return string
      */
-    private function fullpageurl()
+    private function fullpageurl(): string
     {
-        if (is_null($this->page_url)) {
+        if ($this->page_url === NULL) {
             global $_SERVER;
             $pageURL = 'http';
-            if ($_SERVER["HTTPS"] == "on") {
+            if ($_SERVER["HTTPS"] === "on") {
                 $pageURL .= "s";
             }
             $pageURL .= "://";
@@ -69,9 +69,10 @@ class block_assign_get_feedback extends block_base
     /**
      * UTF-8 aware parse_url() replacement.
      *
+     * @param $url
      * @return array
      */
-    private function mb_parse_url($url)
+    private function mb_parse_url(string $url): array
     {
         $enc_url = preg_replace_callback(
             '%[^:/@?&=#]+%usD',
@@ -84,7 +85,7 @@ class block_assign_get_feedback extends block_base
         $parts = parse_url($enc_url);
 
         if ($parts === FALSE) {
-            throw new \InvalidArgumentException('Malformed URL: ' . $url);
+            throw new InvalidArgumentException('Malformed URL: ' . $url);
         }
 
         foreach ($parts as $name => $value) {
@@ -97,24 +98,29 @@ class block_assign_get_feedback extends block_base
     /**
      * @return int
      */
-    private function get_cmid()
+    private function get_cmid(): int
     {
         $cmid = 0;
         $params = [];
         $page_url = $this->fullpageurl();
-        $page_path = strtolower($this->mb_parse_url($page_url, PHP_URL_PATH));
+        $page_path = $this->mb_parse_url($page_url)[PHP_URL_PATH];
+        /** @noinspection PhpVoidFunctionResultUsedInspection */
+        debugging(var_dump($page_path, TRUE));
         if (mb_strpos($page_path, '/mod/assign/view.php') !== FALSE) {
-
-            $url_query = $this->mb_parse_url($page_url, PHP_URL_QUERY);
+            $url_query = $this->mb_parse_url($page_url)[PHP_URL_QUERY];
             parse_str($url_query, $params);
             if (isset($params['id']) && (int)$params['id'] > 0) {
                 $cmid = (int)$params['id'];
-                list ($course, $cm) = get_course_and_cm_from_cmid($cmid, 'assign');
-                if ($course) {
-                    $this->course = $course;
-                }
-                if ($cm) {
-                    $this->cm = $cm;
+                try {
+                    list ($course, $cm) = get_course_and_cm_from_cmid($cmid, 'assign');
+                    if ($course) {
+                        $this->course = $course;
+                    }
+                    if ($cm) {
+                        $this->cm = $cm;
+                    }
+                } catch (Exception $exception) {
+                    error_log($exception->getMessage());
                 }
             }
         }
@@ -133,9 +139,8 @@ class block_assign_get_feedback extends block_base
      * @return              string, as HTML content for the block
      *
      */
-    public function get_content()
+    public final function get_content(): stdClass
     {
-        /** @var stdClass $this */
         // define usage of global variables
         global $PAGE, $COURSE;// , $DB , $CFG ; // $USER, $SITE , $OUTPUT, $THEME, $OUTPUT ;
 
@@ -145,7 +150,11 @@ class block_assign_get_feedback extends block_base
         }
 
         if (NULL !== $this->title) {
-            $this->title = get_string('blockheader', 'block_assign_get_feedback');
+            try {
+                $this->title = get_string('blockheader', 'block_assign_get_feedback');
+            } catch (coding_exception $e) {
+                error_log($e->getMessage());
+            }
         }
 
         // if the contents are already set, just return them
@@ -154,18 +163,34 @@ class block_assign_get_feedback extends block_base
         }
 
         // this is only for logged in users
-        if (!isloggedin() || isguestuser()) {
-            return '';
+        try {
+            if (!isloggedin() || isguestuser()) {
+                return '';
+            }
+        } catch (coding_exception $e) {
+            error_log($e->getMessage());
         }
 
         // get the current moodle configuration
         require_once __DIR__ . '/../../config.php';
 
         // this is only for logged in users
-        require_login();
+        try {
+            require_login();
+        } catch (coding_exception $e) {
+            error_log($e->getMessage());
+        } catch (require_login_exception $e) {
+            error_log($e->getMessage());
+        } catch (moodle_exception $e) {
+            error_log($e->getMessage());
+        }
 
         // get the module information
-        $courseinfo = get_fast_modinfo($COURSE);
+        try {
+            $courseinfo = get_fast_modinfo($COURSE);
+        } catch (moodle_exception $e) {
+            error_log($e->getMessage());
+        }
 
         // prapare for contents
         $this->content = new stdClass;
@@ -173,7 +198,11 @@ class block_assign_get_feedback extends block_base
         $this->content->text .= '<strong>' . $PAGE->title . '</strong>';
 
         // add a footer for the block
-        $this->content->footer = '<hr style="display: block!important;"/><div style="text-align:center;">' . get_string('blockfooter', 'block_assign_get_feedback') . '</div>';
+        try {
+            $this->content->footer = '<hr style="display: block!important;"/><div style="text-align:center;">' . get_string('blockfooter', 'block_assign_get_feedback') . '</div>';
+        } catch (coding_exception $e) {
+            error_log($e->getMessage());
+        }
 
 
         // get the id parameter if exists
@@ -184,7 +213,7 @@ class block_assign_get_feedback extends block_base
             // set page context
             $PAGE->set_context(context_module::instance($cmid));
             try {
-                if ($courseinfo->get_cm($cmid)) {
+                if (isset($courseinfo) && $courseinfo->get_cm($cmid)) {
                     $cm = $courseinfo->get_cm($cmid);
                 } else {
                     return $this->content;
@@ -212,13 +241,13 @@ class block_assign_get_feedback extends block_base
         return $this->content;
     }
 
-    private function show_feedback_comments_link(int $cmid)
+    private function show_feedback_comments_link(int $cmid): string
     {
         global $DB;
         $html = '';
         if ($cmid > 0) {
-            $stu = $DB->sql_concat_join(' ', [cm . course, co . shortname, cm . id, ma . name, ac . assignment]);
-            $tea = $DB->sql_concat_join(' ' . [tea . idnumber, tea . username, tea . firstname, tea . lastname]);
+            $stu = $DB->sql_concat_join(' ', ['cm.course', 'co.shortname', 'cm.id', 'ma.name', 'ac.assignment']);
+            $tea = $DB->sql_concat_join(' ', ['tea.idnumber', 'tea.username', 'tea.firstname', 'tea.lastname']);
             $sql = /** @lang TEXT */
                 "
 SELECT 
@@ -237,6 +266,8 @@ WHERE mo.name  = :module AND cm.id = :cmid ";
                 if ($records) {
                     $action = new moodle_url('/blocks/assign_get_feedback/feedback_comments.php', ['id' => $cmid, 'sesskey' => sesskey()]);
                     $html .= html_writer::link($action, get_string('feedback_comments', 'block_assign_get_feedback'));
+                } else {
+                    $html .= get_string('no_feedback_comments', 'block_assign_get_feedback');
                 }
             } catch (Exception $exception) {
                 error_log($exception->getMessage());
@@ -245,7 +276,7 @@ WHERE mo.name  = :module AND cm.id = :cmid ";
         return $html;
     }
 
-    private function show_links(int $cmid)
+    private function show_links(int $cmid): string
     {
 
         $html = '';
