@@ -105,7 +105,7 @@ class block_assign_get_feedback extends block_base
         $page_url = $this->fullpageurl();
         $page_path = $this->mb_parse_url($page_url)[PHP_URL_PATH];
         /** @noinspection PhpVoidFunctionResultUsedInspection */
-        debugging(var_dump($page_path, TRUE));
+        error_log(var_dump($page_path, TRUE));
         if (mb_strpos($page_path, '/mod/assign/view.php') !== FALSE) {
             $url_query = $this->mb_parse_url($page_url)[PHP_URL_QUERY];
             parse_str($url_query, $params);
