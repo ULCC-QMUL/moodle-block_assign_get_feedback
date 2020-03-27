@@ -56,25 +56,25 @@ WHERE mo.name  = :module AND cm.id = :cmid ";
                 $header = 0;
                 # $action = new moodle_url('/blocks/assign_get_feedback/feedback_comments.php', ['id' => $cmid, 'sesskey' => sesskey()]);
                 # $html .= '<p>' . html_writer::link($action, get_string('feedback_comments', 'block_assign_get_feedback'),['target'=>'_blank']) . '</p>';
-                $html .= '<table>';
+                # $html .= '<table>';
                 foreach($records as $record){
-                    $html .= '<tr>';
+                    $html .= '<table><tr>';
                     foreach($record as $name => $value){
                        // Disallow scripts inside the feedback comments to be executed in the browser
                        $value = str_replace('<script', '<filtered', $value);
                        $value = str_replace('</script', '</filtered', $value);
-                       $html .= '<td>';
+                       $html .= '<td style="vertical-align:top;text-align: left;border-bottom: 1px solid #ddd;">';
                        if($header === 0){
-                           $html .= "<h3>$name</h3><br/>$value";
+                           $html .= "<h3>$name</h3><hr/>$value";
                        } else {
                            $html .= $value;
                        }
                        $html .= '</td>';
                     }
                     $header = 1;
-                    $html .= '</tr>';
+                    $html .= '</tr></table>';
                 }
-                $html .= '</table>';
+                #$html .= '</table>';
             } else {
                 $html .=  '<p>' . get_string('no_feedback_comments', 'block_assign_get_feedback') . '</p>';
             }
