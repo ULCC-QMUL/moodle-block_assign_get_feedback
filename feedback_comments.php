@@ -56,9 +56,9 @@ WHERE mo.name  = :module AND cm.id = :cmid ";
                 $header = 0;
                 # $action = new moodle_url('/blocks/assign_get_feedback/feedback_comments.php', ['id' => $cmid, 'sesskey' => sesskey()]);
                 # $html .= '<p>' . html_writer::link($action, get_string('feedback_comments', 'block_assign_get_feedback'),['target'=>'_blank']) . '</p>';
-                # $html .= '<table>';
+                $html .= '<table>';
                 foreach($records as $record){
-                    $html .= '<table><tr>';
+                    $html .= '<tr>';
                     foreach($record as $name => $value){
                        // Disallow scripts inside the feedback comments to be executed in the browser
                        $value = str_replace('<script', '<filtered', $value);
@@ -72,9 +72,9 @@ WHERE mo.name  = :module AND cm.id = :cmid ";
                        $html .= '</td>';
                     }
                     $header = 1;
-                    $html .= '</tr></table>';
+                    $html .= '</tr>';
                 }
-                #$html .= '</table>';
+                $html .= '</table>';
             } else {
                 $html .=  '<p>' . get_string('no_feedback_comments', 'block_assign_get_feedback') . '</p>';
             }
