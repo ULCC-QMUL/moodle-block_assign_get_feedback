@@ -67,35 +67,6 @@ class block_assign_get_feedback extends block_base
     }
 
     /**
-     * UTF-8 aware parse_url() replacement.
-     *
-     * @param $url
-     * @return array
-     */
-    private function mb_parse_url(string $url): array
-    {
-        $enc_url = preg_replace_callback(
-            '%[^:/@?&=#]+%usD',
-            function ($matches) {
-                return urlencode($matches[0]);
-            },
-            $url
-        );
-
-        $parts = parse_url($enc_url);
-
-        if ($parts === FALSE) {
-            throw new InvalidArgumentException('Malformed URL: ' . $url);
-        }
-
-        foreach ($parts as $name => $value) {
-            $parts[$name] = urldecode($value);
-        }
-
-        return $parts;
-    }
-
-    /**
      * @return int
      */
     private function get_cmid(): int
@@ -159,9 +130,7 @@ class block_assign_get_feedback extends block_base
         // if the contents are already set, just return them
         if ($this->content !== NULL) {
             return $this->content;
-        } else {
-            error_log('Content is not null :' . print_r($this->content, TRUE ));
-        }
+        } else error_log('Content is not null :' . print_r($this->content, TRUE ));
 
         // this is only for logged in users
         try {
