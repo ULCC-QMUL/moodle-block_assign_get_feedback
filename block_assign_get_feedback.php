@@ -160,7 +160,7 @@ class block_assign_get_feedback extends block_base
         if ($this->content !== NULL) {
             return $this->content;
         } else {
-            error_log('Content is not null :' . $this->content->text);
+            error_log('Content is not null :' . print_r($this->content, TRUE ));
         }
 
         // this is only for logged in users
