@@ -74,7 +74,7 @@ class block_assign_get_feedback extends block_base
         $cmid = 0;
         $params = [];
         $page_url = $this->fullpageurl();
-        $page_path = parse_url($page_url)['path'];
+        $page_path = isset(parse_url($page_url)['path']) ? parse_url($page_url)['path'] : '';
         if (strpos($page_path, '/mod/assign/view.php') !== FALSE) {
             $url_query = parse_url($page_url)['query'];
             # split URL query into parameters array
