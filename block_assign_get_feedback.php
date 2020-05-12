@@ -56,10 +56,10 @@ class block_assign_get_feedback extends block_base
                 $pageURL .= "s";
             }
             $pageURL .= "://";
-            if (isset($_SERVER["SERVER_PORT"]) && $_SERVER["SERVER_PORT"] != "80") {
-                $pageURL .= $_SERVER["SERVER_NAME"] . ":" . $_SERVER["SERVER_PORT"] . $_SERVER["REQUEST_URI"];
+            if (isset($_SERVER["SERVER_PORT"]) && isset($_SERVER["SERVER_PORT"]) && $_SERVER["SERVER_PORT"] != "80") {
+                $pageURL .= $_SERVER["SERVER_NAME"] . ":" . $_SERVER["SERVER_PORT"] . ($_SERVER["REQUEST_URI"] ?? '');
             } else {
-                $pageURL .= $_SERVER["SERVER_NAME"] ?? ''. $_SERVER["REQUEST_URI"] ?? '';
+                $pageURL .= $_SERVER["SERVER_NAME"] ?? '' . $_SERVER["REQUEST_URI"] ?? '';
             }
             $this->page_url = $pageURL;
         }
@@ -130,7 +130,7 @@ class block_assign_get_feedback extends block_base
         // if the contents are already set, just return them
         if ($this->content !== NULL) {
             return $this->content;
-        } else error_log('Content is not null :' . print_r($this->content, TRUE ));
+        } else error_log('Content is not null :' . print_r($this->content, TRUE));
 
         // this is only for logged in users
         try {
@@ -206,10 +206,10 @@ class block_assign_get_feedback extends block_base
         global $DB;
         $visibility = 0;
         try {
-            $visibility = $DB->get_field('course_modules', 'visible', ['id' => $cmid ]);
+            $visibility = $DB->get_field('course_modules', 'visible', ['id' => $cmid]);
             # error_log('VISIBILITY_1_OK :'.print_r($visibility));
         } catch (Exception $exception) {
-            error_log('VISIBILITY_1_ERR:'.print_r($exception, true)); #->getMessage());
+            error_log('VISIBILITY_1_ERR:' . print_r($exception, TRUE)); #->getMessage());
         }
         return $visibility;
     }
@@ -238,13 +238,13 @@ WHERE mo.name  = :module AND cm.id = :cmid ";
                 $records = $DB->get_records_sql($sql, ['module' => 'assign', 'cmid' => $cmid]);
                 if ($records) {
                     $action = new moodle_url('/blocks/assign_get_feedback/feedback_comments.php', ['id' => $cmid, 'sesskey' => sesskey()]);
-                    $html .= '<p>' . html_writer::link($action, get_string('feedback_comments', 'block_assign_get_feedback'),['target'=>'_blank']) . '</p>';
+                    $html .= '<p>' . html_writer::link($action, get_string('feedback_comments', 'block_assign_get_feedback'), ['target' => '_blank']) . '</p>';
                 } else {
-                    $html .=  '<p>' . get_string('no_feedback_comments', 'block_assign_get_feedback') . '</p>';
+                    $html .= '<p>' . get_string('no_feedback_comments', 'block_assign_get_feedback') . '</p>';
                 }
             } catch (Exception $exception) {
-                if($CFG->debug){
-                    error_log('COMMENTS_SQL_ERR '.print_r($exception,true));
+                if ($CFG->debug) {
+                    error_log('COMMENTS_SQL_ERR ' . print_r($exception, TRUE));
                 }
             }
         }
